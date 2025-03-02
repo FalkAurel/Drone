@@ -8,35 +8,20 @@
         "type": "tabs",
         "children": [
           {
-            "id": "821f9f80b2766d36",
+            "id": "22859179eab7a631",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ESC.md",
+                "file": "Memory.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ESC"
-            }
-          },
-          {
-            "id": "e124932642f80660",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "PID.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "PID"
+              "title": "Memory"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -178,37 +163,39 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "339105ceea0d75f6",
+  "active": "22859179eab7a631",
   "lastOpenFiles": [
-    "Images/PID_en.svg",
-    "ESC.md",
-    "PID.md",
     "MPU-6050.md",
-    "Batterie.md",
-    "Brushless_Motor.md",
-    "ElectronicSpeedControl.md",
+    "datasheets/ESP32_technical_reference.pdf",
     "ESP32-Wroom-32.md",
+    "datasheets/gy-521_mpu-6050_3-axis_gyroscope_and_acceleration_sensor_en.pdf",
+    "datasheets/ESP32-WROOM-32.pdf",
+    "datasheets/LM2596S-3.3.PDF",
+    "Memory.md",
+    "Flight controller.md",
+    "ESC.md",
+    "Errors.md",
+    "Brushless_Motor.md",
+    "Untitled",
     "DLPF.md",
+    "PID.md",
+    "Images/PID_en.svg",
+    "Batterie.md",
+    "ElectronicSpeedControl.md",
     "Produktliste.md",
     "().md",
-    "datasheets/ESP32-WROOM-32.pdf",
     "datasheets/30A_BLDC_ESC_Product_Manual.pdf",
-    "datasheets/gy-521_mpu-6050_3-axis_gyroscope_and_acceleration_sensor_en.pdf",
     "datasheets/MPU-6050-RegisterMapping.pdf",
     "datasheets/MPU-6050-IMU-datasheet.pdf",
-    "datasheets/LM2596S-3.3.PDF",
     "datasheets/AZ291_A_4-3_DE_B08T158WPS_10e7dd03-dec8-4ce1-89b7-f70f9b52f84c.pdf",
-    "Untitled.md",
     "Untitled.canvas",
     "Images/MPU-6050-Register-0x6B.png",
     "Images/MPU-6050-Register-0x1C.png",
     "Images/MPU-6050-RegisterLayout-0x1B.png",
     "Images/MPU-6050-Register0x1A-Tabel.png",
     "led",
-    "datasheets/I2CProtocollSpecifications.pdf",
     "[[.md",
     "datasheet/MPU-6050-IMU-datasheet.pdf.md",
-    "datasheet",
     "Images/ESP32-Wroom-32-Pinout.jpg",
     "Welcome.md",
     "Physik/Drehmoment.md"

@@ -298,9 +298,9 @@ impl <'driver> GY521 <'driver> {
     }
 
     // Returns the delay in µs
-    pub fn get_delay(&mut self) -> Option<u32> {
+    pub fn get_delay(&mut self) -> Result<u32, Error> {
         let mut dlpf_register: [u8; 1] = [0];
-        self.master.write_read(MPU_ADDRESS, &[DLPF_CONFIG_ADDR], &mut dlpf_register).ok()?;
+        self.master.write_read(MPU_ADDRESS, &[DLPF_CONFIG_ADDR], &mut dlpf_register)?;
         
         let delay_µs: u32 = match dlpf_register[0] & 7 {
             const { Dlpf::Hz_256 as u8 } => 0,
@@ -312,6 +312,6 @@ impl <'driver> GY521 <'driver> {
             const { Dlpf::Hz_5 as u8   } => 19000,
             _ => panic!("Please intilize the Sensor first")
         };
-        Some(delay_µs)
+        Ok(delay_µs)
     }
 }

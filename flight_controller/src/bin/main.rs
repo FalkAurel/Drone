@@ -1,16 +1,15 @@
 #![no_std]
 #![no_main]
+#![feature(allocator_api)]
 
 use esp_backtrace as _;
 use esp_hal::{
-    clock::CpuClock, delay::Delay, peripherals::Peripherals, time::{now, Duration, Instant}, Config
+    clock::CpuClock, peripherals::Peripherals, Config
 };
 
 use esp_println::println;
 use flight_controller::{
-    esc::{ESCControler, RotorStrength}, 
-    gy521::{DataFrame, Dlpf, MPUConfig, GY521}, 
-    math::{compute_angle_acceleration, compute_angle_integration, Angle}, mem::init_heap
+    boxed::Box, esc::ESCControler, mem::{get_mem_stats, init_heap}
 };
 
 #[esp_hal::main]
@@ -19,37 +18,37 @@ unsafe fn main() -> ! {
     let peripherals: Peripherals = esp_hal::init(config);
 
     init_heap();
+    // Setting up GY521
+    // let mut gy521: GY521 = GY521::new();
+    // gy521.init(MPUConfig::default().set_dlpf(Dlpf::Hz_20)).unwrap();
+    // gy521.calibrate(500).unwrap();
+    // let mut previous: Angle = compute_angle_acceleration(gy521.read().unwrap().get_accel());
+    // let delay: Delay = Delay::new();
+    // let delay_us: Duration = Duration::micros(gy521.get_delay().unwrap() as u64);
 
-    let mut gyro: GY521 = GY521::new();
-    gyro.init(MPUConfig::default().set_dlpf(Dlpf::Hz_98)).expect("Initialization failed");
-    gyro.calibrate(1000).expect("Calibration failed");
-    let _delay: Delay = Delay::new();
-    let _delay_us: Duration = Duration::micros(gyro.get_delay().unwrap() as u64);
+    // Setting up ESC-Controller
+    let mut esc_controller: ESCControler = ESCControler::new(peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23).unwrap();
+    esc_controller.init().unwrap();
 
-    let mut motor_control: ESCControler = ESCControler::new(peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23).unwrap();
 
-    motor_control.init().unwrap();
-    motor_control.update_rotor_frequency(RotorStrength::new(50, 50, 50, 50)).unwrap();
+    use flight_controller::alloc::vec::Vec;
+    let mut vec: Vec<usize,_> = Vec::with_capacity(2000);
 
-    let mut previous: Angle = compute_angle_acceleration(gyro.read().unwrap().get_accel());
-
-    let mut sum: u64 = 0;
-    println!("Starting event loop");
-    for _ in 0..10000 {
-        let start: Instant = now();
-        let dataframe: DataFrame = gyro.read().unwrap();
-
-        let angle: Angle = compute_angle_integration(dataframe.get_gyro(), previous);
-        previous = angle;
-        motor_control.update_rotor_frequency(RotorStrength::new(70, 40, 40, 70)).unwrap();
-        let end: Instant = now();
-
-        sum += (end - start).to_micros();
+    for i in 0..vec.capacity() {
+        vec.push(i);
     }
 
+    let sum: usize = vec.iter().fold(0, |acc, current| -> usize {
+        acc + *current
+    });
 
-    println!("{}", sum as f64 / 10000.0);
+    assert_eq!(sum, (vec.len() * (vec.len() - 1) / 2));
+    drop(vec);
+    let klein: Box<u8> = Box::new(1);
+    println!("{}", klein);
 
-    loop {   
+    get_mem_stats();
+
+    loop {
     }
 }
