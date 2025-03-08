@@ -10,4 +10,7 @@
   "rust-analyzer.cargo.extraEnv": {
     "RUSTUP_TOOLCHAIN": "esp"
   },
+  "rust-analyzer.cargo.features": [
+    "wifi"
+  ]
 }

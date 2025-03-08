@@ -1,7 +1,7 @@
 use core::{
     ops::{Deref, DerefMut}, 
     sync::atomic::{AtomicBool, Ordering},
-    cell::UnsafeCell
+    cell::{UnsafeCell, OnceCell}
 };
 
 pub struct Mutex<T> {
@@ -55,3 +55,31 @@ impl<'guard, T> Drop for MutexGuard<'guard, T> {
         self.data.is_locked.store(false, Ordering::Release);
     }
 }
+
+
+pub struct OnceLock<T> {
+    inner: OnceCell<T>,
+    written: AtomicBool
+}
+
+impl <T> OnceLock<T> {
+    pub const fn new() -> Self {
+        Self {inner: OnceCell::new(), written: AtomicBool::new(false)}
+    }
+
+    // Can only fail, if it has already been written to
+    pub fn set(&self, value: T) -> Option<()> {
+        if let Ok(false) = self.written.compare_exchange(false, true, Ordering::Release, Ordering::Acquire) {
+            self.inner.set(value).ok()
+        } else {
+            None
+        }
+    }
+
+    pub fn get(&self) -> Option<&T> {
+        self.inner.get()
+    }
+}
+
+unsafe impl <T> Send for OnceLock<T> {}
+unsafe impl <T> Sync for OnceLock<T> {}

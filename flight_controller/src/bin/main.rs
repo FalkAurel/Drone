@@ -1,23 +1,24 @@
 #![no_std]
 #![no_main]
 #![feature(allocator_api)]
+#![feature(stmt_expr_attributes)]
+
 
 use esp_backtrace as _;
 use esp_hal::{
-    clock::CpuClock, peripherals::Peripherals, Config
+    clock::CpuClock, ledc::timer, peripherals::{Peripherals, TIMG0}, timer::timg::TimerGroup, Config
 };
+use flight_controller::esc::{ESCControler, RotorStrength};
 
-use esp_println::println;
-use flight_controller::{
-    boxed::Box, esc::ESCControler, mem::{get_mem_stats, init_heap}
-};
+#[cfg(feature = "wifi")]
+use flight_controller::wifi::Wifi;
+
 
 #[esp_hal::main]
 unsafe fn main() -> ! {
     let config: Config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals: Peripherals = esp_hal::init(config);
 
-    init_heap();
     // Setting up GY521
     // let mut gy521: GY521 = GY521::new();
     // gy521.init(MPUConfig::default().set_dlpf(Dlpf::Hz_20)).unwrap();
@@ -29,26 +30,24 @@ unsafe fn main() -> ! {
     // Setting up ESC-Controller
     let mut esc_controller: ESCControler = ESCControler::new(peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23).unwrap();
     esc_controller.init().unwrap();
+    esc_controller.update_rotor_frequency(RotorStrength::new(50, 50, 50, 50)).unwrap();
 
-
-    use flight_controller::alloc::vec::Vec;
-    let mut vec: Vec<usize,_> = Vec::with_capacity(2000);
-
-    for i in 0..vec.capacity() {
-        vec.push(i);
+    #[cfg(feature = "wifi")]
+    {
+        let timer_group: TimerGroup<TIMG0> = TimerGroup::new(peripherals.TIMG0);
+        Wifi::init(timer_group.timer0, peripherals.RNG, peripherals.RADIO_CLK);
     }
 
-    let sum: usize = vec.iter().fold(0, |acc, current| -> usize {
-        acc + *current
-    });
+    drop(esc_controller);
 
-    assert_eq!(sum, (vec.len() * (vec.len() - 1) / 2));
-    drop(vec);
-    let klein: Box<u8> = Box::new(1);
-    println!("{}", klein);
-
-    get_mem_stats();
+    // Setting up Wifi Access Point
 
     loop {
+        // esc_controller.update_rotor_frequency(RotorStrength::new(30, 30, 50, 50)).unwrap()
+        // let data: DataFrame = gy521.read().unwrap();
+        // let angle: Angle = compute_angle_integration(data.get_gyro(), previous);
+        // println!("Messured Angle: {angle:?}");
+        // previous = angle;
+        // delay.delay(delay_us);
     }
 }

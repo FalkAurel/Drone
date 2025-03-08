@@ -8,18 +8,35 @@ name = "flight_controller"
 path = "./src/bin/main.rs"
 
 [dependencies]
+bleps = { git = "https://github.com/bjoernQ/bleps", package = "bleps", rev = "a5148d8ae679e021b78f53fd33afb8bb35d0b62e", features = [
+  "async",
+  "macros",
+] }
+critical-section = "1.2.0"
+embedded-io = "0.6.1"
+esp-alloc = { version = "0.6.0", optional = true}
 esp-backtrace = { version = "0.15.0", features = [
   "esp32",
   "exception-handler",
   "panic-handler",
   "println",
 ] }
-esp-hal = { version = "0.23.1", features = ["esp32", "unstable", "quad-psram"] } # defmt
-esp-println = { version = "0.13.0", features = ["esp32", "log"] }
 
-heapless = { version = "0.8.0", default-features = false }
-log = { version = "0.4.21"  } # https://docs.esp-rs.org/esp-hal/esp-wifi/0.12.0/esp32/esp_wifi/index.html
-smoltcp = { version = "0.12.0", default-features = false, features = [
+
+esp-hal = { path = "../esp-hal/esp-hal", features = ["esp32", "unstable", "psram"] }
+esp-println = { version = "0.13.0", features = ["esp32", "log"] }
+esp-wifi = { version = "0.13.0", default-features = false, optional = true, path = "../esp-hal/esp-wifi", features = [
+  "ble", 
+  "coex", 
+  "esp-alloc", 
+  "esp32", 
+  "log", 
+  "wifi"
+] }
+
+libm = "0.2.11"
+log = { version = "0.4.21" }
+smoltcp = { version = "0.12.0", default-features = false, optional = true, features = [
   "medium-ethernet",
   "multicast",
   "proto-dhcpv4",
@@ -31,28 +48,23 @@ smoltcp = { version = "0.12.0", default-features = false, features = [
   "socket-tcp",
   "socket-udp",
 ] }
-# for more networking protocol support see https://crates.io/crates/edge-net
-bleps = { git = "https://github.com/bjoernQ/bleps", package = "bleps", rev = "a5148d8ae679e021b78f53fd33afb8bb35d0b62e", features = [
-  "async",
-  "macros",
-] }
 
-critical-section = "1.2.0"
-static_cell = { version = "2.1.0", features = ["nightly"] }
-libm = "0.2.11"
-fugit = "0.3.7"
+[features]
+wifi = ["dep:esp-wifi", "dep:esp-alloc"]
 
 [profile.dev]
 # Rust debug is too slow.
 # For debug builds always builds with some optimization
 opt-level = "s"
-lto = false
+
+[profile.dev.package.esp-wifi]
+opt-level = 3
 
 [profile.release]
 codegen-units    = 1     # LLVM can perform better optimizations using a single thread
 debug            = 2
 debug-assertions = false
 incremental      = false
-#lto              = 'fat'
-opt-level        = "s"
+lto              = 'fat'
+opt-level        = 's'
 overflow-checks  = false

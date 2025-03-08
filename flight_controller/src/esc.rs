@@ -15,12 +15,13 @@ use esp_hal::{
         },
         LSGlobalClkSource, Ledc, LowSpeed
     },
-    peripherals::LEDC
+    peripherals::LEDC, time::{self, Rate}
 };
 
-
-use fugit::HertzU32;
 pub use error_handling::ESCError;
+
+use crate::{mem::{BumpAllocator, ALLOCATOR}, sync::Mutex};
+
 
 mod error_handling {
     use core::fmt::Debug;
@@ -63,6 +64,9 @@ impl RotorStrength {
 /// The ESC 30A operates at 50-60hz
 pub struct ESCControler<'controller> {
     ledc: Ledc<'controller>,
+    #[cfg(feature = "wifi")]
+    channels: Box<[Channel<'controller, LowSpeed>; 4], &'controller Mutex<BumpAllocator>>,
+    #[cfg(not(feature = "wifi"))]
     channels: Box<[Channel<'controller, LowSpeed>; 4]>,
 }
 
@@ -78,7 +82,7 @@ impl <'controller> ESCControler<'controller> {
             TimerConfig {
                 duty: Duty::Duty8Bit,
                 clock_source: LSClockSource::APBClk,
-                frequency: HertzU32::Hz(ESC_HZ_FREQUENCY)
+                frequency: time::Rate::from_hz(ESC_HZ_FREQUENCY)
             }
         ).map_err(|_| ESCError::TimerConfigError)?;
 
@@ -86,12 +90,22 @@ impl <'controller> ESCControler<'controller> {
             TIMER = Some(timer)
         }
 
+        #[cfg(feature = "wifi")]
+        let channels: Box<[Channel<'controller, LowSpeed>; 4], &Mutex<BumpAllocator>> = Box::new_in([
+            ledc.channel(ChannelNumber::Channel0, pin27),
+            ledc.channel(ChannelNumber::Channel1, pin26),
+            ledc.channel(ChannelNumber::Channel2, pin25),
+            ledc.channel(ChannelNumber::Channel3, pin23),
+        ], &ALLOCATOR);
+
+        #[cfg(not(feature = "wifi"))]
         let channels: Box<[Channel<'controller, LowSpeed>; 4]> = Box::new([
             ledc.channel(ChannelNumber::Channel0, pin27),
             ledc.channel(ChannelNumber::Channel1, pin26),
             ledc.channel(ChannelNumber::Channel2, pin25),
             ledc.channel(ChannelNumber::Channel3, pin23),
         ]);
+
 
         Ok(Self { ledc, channels })
     }
@@ -127,7 +141,7 @@ impl <'controller> ESCControler<'controller> {
             TimerConfig {
                 duty: Duty::Duty8Bit,
                 clock_source: LSClockSource::APBClk,
-                frequency: HertzU32::Hz(ESC_HZ_FREQUENCY)
+                frequency: Rate::from_hz(ESC_HZ_FREQUENCY)
             }
         ).map_err(|_| ESCError::TimerConfigError)?;
         Ok(timer)
