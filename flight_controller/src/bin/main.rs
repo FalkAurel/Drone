@@ -1,54 +1,44 @@
 #![no_std]
 #![no_main]
-#![feature(allocator_api)]
 
 use esp_backtrace as _;
-use esp_hal::{
-    clock::CpuClock, peripherals::Peripherals, Config
-};
+use esp_hal::clock::CpuClock;
+use esp_hal::peripherals::{Peripherals, TIMG0};
+use esp_hal::{main, Config};
+use esp_hal::timer::timg::TimerGroup;
+use flight_controller::esc::{ESCControler, RotorStrength};
 
-use esp_println::println;
-use flight_controller::{
-    boxed::Box, esc::ESCControler, mem::{get_mem_stats, init_heap}
-};
-
-#[esp_hal::main]
-unsafe fn main() -> ! {
-    let config: Config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
+#[main]
+fn main() -> ! {
+    // generator version: 0.2.2
+    let config: Config = Config::default().with_cpu_clock(CpuClock::max());
     let peripherals: Peripherals = esp_hal::init(config);
 
-    init_heap();
-    // Setting up GY521
-    // let mut gy521: GY521 = GY521::new();
-    // gy521.init(MPUConfig::default().set_dlpf(Dlpf::Hz_20)).unwrap();
-    // gy521.calibrate(500).unwrap();
-    // let mut previous: Angle = compute_angle_acceleration(gy521.read().unwrap().get_accel());
-    // let delay: Delay = Delay::new();
-    // let delay_us: Duration = Duration::micros(gy521.get_delay().unwrap() as u64);
+    esp_println::logger::init_logger_from_env();
 
-    // Setting up ESC-Controller
-    let mut esc_controller: ESCControler = ESCControler::new(peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23).unwrap();
-    esc_controller.init().unwrap();
+    #[cfg(feature = "wifi")]
+    {
+        use flight_controller::mem::init_heap;
 
-
-    use flight_controller::alloc::vec::Vec;
-    let mut vec: Vec<usize,_> = Vec::with_capacity(2000);
-
-    for i in 0..vec.capacity() {
-        vec.push(i);
+        init_heap();
     }
 
-    let sum: usize = vec.iter().fold(0, |acc, current| -> usize {
-        acc + *current
-    });
+    let mut esc_controller: ESCControler = ESCControler::new(
+        peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23
+    ).unwrap();
 
-    assert_eq!(sum, (vec.len() * (vec.len() - 1) / 2));
-    drop(vec);
-    let klein: Box<u8> = Box::new(1);
-    println!("{}", klein);
+    esc_controller.init().unwrap();
+    esc_controller.update_rotor_frequency(RotorStrength::new(0, 50, 0, 0)).unwrap();
 
-    get_mem_stats();
+    #[cfg(feature = "wifi")]
+    {
+        use flight_controller::wifi::Wifi;
+        let timg0: TimerGroup<TIMG0> = TimerGroup::new(peripherals.TIMG0);
+
+        Wifi::init(timg0.timer0, peripherals.RNG, peripherals.RADIO_CLK)
+    }
 
     loop {
     }
+    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/v0.23.1/examples/src/bin
 }

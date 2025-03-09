@@ -10,3 +10,7 @@ Der 30A BLDC ESC ist ein elektronischer Speed Controller, der bei 5V und max. 3A
 https://en.wikipedia.org/wiki/Pulse-width_modulation
 
 
+## Todo 
+- Füge Pull-up wiederstande hinzu
+
+

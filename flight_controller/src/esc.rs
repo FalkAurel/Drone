@@ -1,4 +1,5 @@
 use alloc::boxed::Box;
+use crate::{mem::{ALLOCATOR, BumpAllocator}, sync::Mutex};
 
 static mut TIMER: Option<Timer<'static, LowSpeed>> = None;
 const ESC_HZ_FREQUENCY: u32 = 50;
@@ -18,9 +19,11 @@ use esp_hal::{
     peripherals::LEDC
 };
 
-
 use fugit::HertzU32;
+
 pub use error_handling::ESCError;
+
+
 
 mod error_handling {
     use core::fmt::Debug;
@@ -63,6 +66,9 @@ impl RotorStrength {
 /// The ESC 30A operates at 50-60hz
 pub struct ESCControler<'controller> {
     ledc: Ledc<'controller>,
+    #[cfg(feature = "wifi")]
+    channels: Box<[Channel<'controller, LowSpeed>; 4], &'controller Mutex<BumpAllocator>>,
+    #[cfg(not(feature = "wifi"))]
     channels: Box<[Channel<'controller, LowSpeed>; 4]>,
 }
 
@@ -86,12 +92,22 @@ impl <'controller> ESCControler<'controller> {
             TIMER = Some(timer)
         }
 
+        #[cfg(feature = "wifi")]
+        let channels: Box<[Channel<'controller, LowSpeed>; 4], &Mutex<BumpAllocator>> = Box::new_in([
+            ledc.channel(ChannelNumber::Channel0, pin27),
+            ledc.channel(ChannelNumber::Channel1, pin26),
+            ledc.channel(ChannelNumber::Channel2, pin25),
+            ledc.channel(ChannelNumber::Channel3, pin23),
+        ], &ALLOCATOR);
+
+        #[cfg(not(feature = "wifi"))]
         let channels: Box<[Channel<'controller, LowSpeed>; 4]> = Box::new([
             ledc.channel(ChannelNumber::Channel0, pin27),
             ledc.channel(ChannelNumber::Channel1, pin26),
             ledc.channel(ChannelNumber::Channel2, pin25),
             ledc.channel(ChannelNumber::Channel3, pin23),
         ]);
+
 
         Ok(Self { ledc, channels })
     }
