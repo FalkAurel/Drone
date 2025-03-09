@@ -1,4 +1,5 @@
 use alloc::boxed::Box;
+use crate::{mem::{ALLOCATOR, BumpAllocator}, sync::Mutex};
 
 static mut TIMER: Option<Timer<'static, LowSpeed>> = None;
 const ESC_HZ_FREQUENCY: u32 = 50;
@@ -15,12 +16,13 @@ use esp_hal::{
         },
         LSGlobalClkSource, Ledc, LowSpeed
     },
-    peripherals::LEDC, time::{self, Rate}
+    peripherals::LEDC
 };
+
+use fugit::HertzU32;
 
 pub use error_handling::ESCError;
 
-use crate::{mem::{BumpAllocator, ALLOCATOR}, sync::Mutex};
 
 
 mod error_handling {
@@ -82,7 +84,7 @@ impl <'controller> ESCControler<'controller> {
             TimerConfig {
                 duty: Duty::Duty8Bit,
                 clock_source: LSClockSource::APBClk,
-                frequency: time::Rate::from_hz(ESC_HZ_FREQUENCY)
+                frequency: HertzU32::Hz(ESC_HZ_FREQUENCY)
             }
         ).map_err(|_| ESCError::TimerConfigError)?;
 
@@ -141,7 +143,7 @@ impl <'controller> ESCControler<'controller> {
             TimerConfig {
                 duty: Duty::Duty8Bit,
                 clock_source: LSClockSource::APBClk,
-                frequency: Rate::from_hz(ESC_HZ_FREQUENCY)
+                frequency: HertzU32::Hz(ESC_HZ_FREQUENCY)
             }
         ).map_err(|_| ESCError::TimerConfigError)?;
         Ok(timer)

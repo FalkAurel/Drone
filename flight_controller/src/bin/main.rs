@@ -1,53 +1,44 @@
 #![no_std]
 #![no_main]
-#![feature(allocator_api)]
-#![feature(stmt_expr_attributes)]
-
 
 use esp_backtrace as _;
-use esp_hal::{
-    clock::CpuClock, ledc::timer, peripherals::{Peripherals, TIMG0}, timer::timg::TimerGroup, Config
-};
+use esp_hal::clock::CpuClock;
+use esp_hal::peripherals::{Peripherals, TIMG0};
+use esp_hal::{main, Config};
+use esp_hal::timer::timg::TimerGroup;
 use flight_controller::esc::{ESCControler, RotorStrength};
 
-#[cfg(feature = "wifi")]
-use flight_controller::wifi::Wifi;
-
-
-#[esp_hal::main]
-unsafe fn main() -> ! {
-    let config: Config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
+#[main]
+fn main() -> ! {
+    // generator version: 0.2.2
+    let config: Config = Config::default().with_cpu_clock(CpuClock::max());
     let peripherals: Peripherals = esp_hal::init(config);
 
-    // Setting up GY521
-    // let mut gy521: GY521 = GY521::new();
-    // gy521.init(MPUConfig::default().set_dlpf(Dlpf::Hz_20)).unwrap();
-    // gy521.calibrate(500).unwrap();
-    // let mut previous: Angle = compute_angle_acceleration(gy521.read().unwrap().get_accel());
-    // let delay: Delay = Delay::new();
-    // let delay_us: Duration = Duration::micros(gy521.get_delay().unwrap() as u64);
-
-    // Setting up ESC-Controller
-    let mut esc_controller: ESCControler = ESCControler::new(peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23).unwrap();
-    esc_controller.init().unwrap();
-    esc_controller.update_rotor_frequency(RotorStrength::new(50, 50, 50, 50)).unwrap();
+    esp_println::logger::init_logger_from_env();
 
     #[cfg(feature = "wifi")]
     {
-        let timer_group: TimerGroup<TIMG0> = TimerGroup::new(peripherals.TIMG0);
-        Wifi::init(timer_group.timer0, peripherals.RNG, peripherals.RADIO_CLK);
+        use flight_controller::mem::init_heap;
+
+        init_heap();
     }
 
-    drop(esc_controller);
+    let mut esc_controller: ESCControler = ESCControler::new(
+        peripherals.LEDC, peripherals.GPIO27, peripherals.GPIO26, peripherals.GPIO25, peripherals.GPIO23
+    ).unwrap();
 
-    // Setting up Wifi Access Point
+    esc_controller.init().unwrap();
+    esc_controller.update_rotor_frequency(RotorStrength::new(0, 50, 0, 0)).unwrap();
+
+    #[cfg(feature = "wifi")]
+    {
+        use flight_controller::wifi::Wifi;
+        let timg0: TimerGroup<TIMG0> = TimerGroup::new(peripherals.TIMG0);
+
+        Wifi::init(timg0.timer0, peripherals.RNG, peripherals.RADIO_CLK)
+    }
 
     loop {
-        // esc_controller.update_rotor_frequency(RotorStrength::new(30, 30, 50, 50)).unwrap()
-        // let data: DataFrame = gy521.read().unwrap();
-        // let angle: Angle = compute_angle_integration(data.get_gyro(), previous);
-        // println!("Messured Angle: {angle:?}");
-        // previous = angle;
-        // delay.delay(delay_us);
     }
+    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/v0.23.1/examples/src/bin
 }

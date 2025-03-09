@@ -3,6 +3,7 @@ use esp_wifi::*;
 
 static mut ESP_WIFI_CONTROLLER: Option<EspWifiController> = None;
 
+#[allow(dead_code)]
 pub struct Wifi<'wifi> {
     h: &'wifi ()
 }

@@ -56,7 +56,6 @@ impl<'guard, T> Drop for MutexGuard<'guard, T> {
     }
 }
 
-
 pub struct OnceLock<T> {
     inner: OnceCell<T>,
     written: AtomicBool

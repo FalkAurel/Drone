@@ -1,5 +1,6 @@
-use core::{alloc::GlobalAlloc, mem::{self, MaybeUninit}, ptr::{null_mut, NonNull}};
-use alloc::{alloc::{AllocError, Allocator}, slice};
+use core::{alloc::GlobalAlloc, ptr::{null_mut, NonNull}, mem};
+use alloc::alloc::{AllocError, Allocator};
+use core::slice;
 use esp_println::println;
 use crate::sync::{Mutex, MutexGuard};
 
@@ -93,9 +94,23 @@ unsafe impl Allocator for Mutex<BumpAllocator> {
     }
 
     unsafe fn deallocate(&self, ptr: core::ptr::NonNull<u8>, layout: core::alloc::Layout) {
-        //println!("Before");
         self.dealloc(ptr.as_ptr(), layout);
-        //println!("After")
+    }
+}
+
+#[cfg(feature = "wifi")]
+#[warn(static_mut_refs)]
+pub fn init_heap() {
+    use core::mem::MaybeUninit;
+    const HEAP_SIZE: usize = 32 * 1024;
+    static mut HEAP: MaybeUninit<[u8; HEAP_SIZE]> = MaybeUninit::uninit();
+
+    unsafe {
+        esp_alloc::HEAP.add_region(esp_alloc::HeapRegion::new(
+            HEAP.as_mut_ptr() as *mut u8,
+            HEAP_SIZE,
+            esp_alloc::MemoryCapability::Internal.into(),
+        ));
     }
 }
 
