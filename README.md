@@ -41,17 +41,21 @@ The codebase is built entirely from scratch, implementing precise control over e
 - [x] Flight stabilization algorithms  
 - [x] Complete design in FreeCAD  
 - [x] Full documentation of code and math 
-- [x] Custom Linked List Memory Allocator
+- [x] Custom Bump/Arena Allocator
+- [x] Implement Wifi
 
-## 📌 To-Do List  
-- [ ] Implement Wifi
-- [ ] Implement PID tuning for better flight stability  
-- [ ] Add remote control functionality  
-- [ ] Optimize power efficiency  
-- [ ] Improve motor calibration  
-- [ ] Perform real-world flight tests  
+## 📌 To-Do List
+- [ ] Implement UDP or custom Data Transfer Protocol
+- [ ] Implement Mulithreading
+- [ ] Implement PID tuning for better flight stability
+- [ ] Add remote control functionality
+- [ ] Optimize power efficiency
+- [ ] Improve motor calibration
+- [ ] Perform real-world flight tests
 
 ## 🚀 Get Involved  
 
-If you're interested in custom drone development, feel free to contribute, ask questions, or suggest improvements!  
+If you're interested in custom drone development, feel free to contribute, ask questions, or suggest improvements!
 
+## Special Thanks
+App Devlopment by [@MaeschDEV](https://github.com/MaeschDEV)

@@ -13,15 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ESP32-Wroom-32.md",
+                "file": "Produktliste.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ESP32-Wroom-32"
+              "title": "Produktliste"
+            }
+          },
+          {
+            "id": "30bacf65eb1f6ec0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "ESP-Wifi.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "ESP-Wifi"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -163,10 +178,16 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "22859179eab7a631",
+  "active": "30bacf65eb1f6ec0",
   "lastOpenFiles": [
-    "ESC.md",
+    "Produktliste.md",
+    "ESP-Wifi.md",
+    "Welcome.md",
+    "PID.md",
+    "MPU-6050.md",
+    "Memory.md",
     "ESP32-Wroom-32.md",
+    "ESC.md",
     "datasheets/TXS0180E.pdf",
     "datasheets/30A_BLDC_ESC_Product_Manual.pdf",
     "datasheets/AZ291_A_4-3_DE_B08T158WPS_10e7dd03-dec8-4ce1-89b7-f70f9b52f84c.pdf",
@@ -177,17 +198,13 @@
     "datasheets/LM2596S-3.3.PDF",
     "datasheets/MPU-6050-IMU-datasheet.pdf",
     "datasheets/MPU-6050-RegisterMapping.pdf",
-    "MPU-6050.md",
-    "Memory.md",
     "Flight controller.md",
     "Errors.md",
     "Brushless_Motor.md",
     "DLPF.md",
-    "PID.md",
     "Images/PID_en.svg",
     "Batterie.md",
     "ElectronicSpeedControl.md",
-    "Produktliste.md",
     "().md",
     "Untitled.canvas",
     "Images/MPU-6050-Register-0x6B.png",
@@ -197,7 +214,6 @@
     "[[.md",
     "datasheet/MPU-6050-IMU-datasheet.pdf.md",
     "Images/ESP32-Wroom-32-Pinout.jpg",
-    "Welcome.md",
     "Physik/Drehmoment.md"
   ]
 }
